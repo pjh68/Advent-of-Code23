@@ -8,7 +8,7 @@ let inputFiles: [Resource] = (1...25)
 let package = Package(
     name: "AdventOfCode",
     platforms: [
-        .iOS(.v15),
+        //.iOS(.v15),
         .macOS(.v12)
     ],
     dependencies: [
