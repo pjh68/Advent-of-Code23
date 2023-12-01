@@ -1,9 +1,10 @@
 // swift-tools-version: 5.6
 import PackageDescription
 
-let inputFiles: [Resource] = (1...25)
+var inputFiles: [Resource] = (1...25)
     .map { "Day \($0)/Day\($0).input" }
     .map {  .process($0) }
+//TODO: add in any part 2 test files here.... AGGHRHRHRH
 
 let package = Package(
     name: "AdventOfCode",
