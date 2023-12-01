@@ -22,7 +22,8 @@ extension SolutionTest {
             .url(forResource: filename ?? "Day\(SUT.day)", withExtension: "input"))
         return try String(contentsOf: input)
     }
-                    
+  
+///did't get this working becuase resource not in the bundle... would need to modify Package.swift... looks like a lot of faff, can just put test data in string literal
 //    func getTestDataP2(filename: String? = nil) throws -> String {
 //        var url = "Day\(SUT.day)p2"
 //        let input = try XCTUnwrap(Bundle.module

@@ -1,13 +1,13 @@
 import Foundation
 struct Day1: Solution {
     static let day = 1
-    var lines : [String]
+    var input : String
     /// Initialise your solution
     ///
     /// - parameters:
     ///   - input: Contents of the `Day1.input` file within the same folder as this source file
     init(input: String) {
-        self.lines = input.components(separatedBy: "\n")
+        self.input = input
     }
 
     /// Return your answer to the main activity of the advent calendar
@@ -15,15 +15,20 @@ struct Day1: Solution {
     /// If you need to, you can change the return type of this method to any type that conforms to `CustomStringConvertible`, i.e. `String`, `Float`, etc.
     func calculatePartOne() -> Int {
         var sum = 0
-        self.lines.forEach { line in
-            if line != "" {
-                //Strip out non numerals
-                let filteredChars = String(line.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0)})
-                let digits = "\(filteredChars.first!)\(filteredChars.last!)"
-                sum += Int(digits)!
-            }
+        self.input.enumerateLines { line, stop in
+            //Strip out non numerals
+            let filteredChars = String(line.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0)})
+            let digits = "\(filteredChars.first!)\(filteredChars.last!)"
+            sum += Int(digits)!
         }
-        
+//        self.lines.forEach { line in
+//            if line != "" {
+//                //Strip out non numerals
+//                let filteredChars = String(line.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0)})
+//                let digits = "\(filteredChars.first!)\(filteredChars.last!)"
+//                sum += Int(digits)!
+//            }
+//        }
         return sum
     }
 
@@ -45,8 +50,7 @@ struct Day1: Solution {
         
         var sum = 0
         let digits = ["0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"zero":0,"one":1,"two":2,"three":3,"four":4,"five":5,"six":6,"seven":7,"eight":8,"nine":9]
-        self.lines.forEach { line in
-            if line != "" {
+        self.input.enumerateLines { line, stop in
                 var firstDigit = 0
                 var firstIndex = line.endIndex //worse case scenario
                 var lastDigit = 0
@@ -71,8 +75,6 @@ struct Day1: Solution {
             let number = "\(firstDigit)\(lastDigit)"
             //print("\(line) : \(number)")
             sum += Int(number)!
-            
-            }
         }
         return sum
     }
