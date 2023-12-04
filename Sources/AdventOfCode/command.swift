@@ -34,7 +34,7 @@ struct Runner {
 //        }
         
         //Let's just do one day at a time...
-        try runDay(Day1.self)
+        try runDay(Day2.self)
         
         
     }
