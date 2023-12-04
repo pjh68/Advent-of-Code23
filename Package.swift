@@ -1,4 +1,4 @@
-// swift-tools-version: 5.6
+// swift-tools-version: 5.9
 import PackageDescription
 
 var inputFiles: [Resource] = (1...25)
@@ -10,7 +10,7 @@ let package = Package(
     name: "AdventOfCode",
     platforms: [
         //.iOS(.v15),
-        .macOS(.v12)
+        .macOS(.v13)
     ],
     dependencies: [
         // Some recommended packages here, you might like to try them!
@@ -32,3 +32,18 @@ let package = Package(
         .testTarget(name: "AdventOfCodeTests", dependencies: ["AdventOfCode"], resources: inputFiles)
     ]
 )
+
+
+let swiftSettings: [SwiftSetting] = [
+    // -enable-bare-slash-regex becomes
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+    // -warn-concurrency becomes
+    .enableUpcomingFeature("StrictConcurrency"),
+    .unsafeFlags(["-enable-actor-data-race-checks"],
+        .when(configuration: .debug)),
+]
+
+for target in package.targets {
+    target.swiftSettings = target.swiftSettings ?? []
+    target.swiftSettings?.append(contentsOf: swiftSettings)
+}
