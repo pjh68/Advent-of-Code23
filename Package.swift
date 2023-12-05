@@ -21,14 +21,13 @@ let package = Package(
         
         // Extra data structure implementations
         // i.e. OrderedSet, Deque, Heap
-        //.package(url: "https://github.com/apple/swift-collections.git",
-        //         .upToNextMinor(from: "1.1.0")),
+        .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0"))
         
         // Support for numerical computing, including complex numbers
         //.package(url: "https://github.com/apple/swift-numerics", from: "1.0.0"),
     ],
     targets: [
-        .executableTarget(name: "AdventOfCode", resources: inputFiles),
+        .executableTarget(name: "AdventOfCode", dependencies: [.product(name: "Collections", package: "swift-collections")],resources: inputFiles),
         .testTarget(name: "AdventOfCodeTests", dependencies: ["AdventOfCode"], resources: inputFiles)
     ]
 )
