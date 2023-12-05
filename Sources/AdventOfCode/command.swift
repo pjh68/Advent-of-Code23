@@ -41,10 +41,23 @@ struct Runner {
     
     private static func runDay(_ day: any Solution.Type) throws {
         let inputString = try getInputString(filename: "Day\(day.day).input")
-        let solution = day.init(input: inputString)
+        
         print("Day \(day.day)")
-        print("\tPart One: \(solution.calculatePartOne())")
-        print("\tPart Two: \(solution.calculatePartTwo())")
+        
+        let solution = day.init(input: inputString)
+
+        let p1time = try measureElapsedTime {
+            print("\tPart One: \(solution.calculatePartOne())")
+        }
+        print("\tPart One execution time: \(p1time) ms")
+        print("\n")
+        
+        let p2time = try measureElapsedTime {
+            print("\tPart Two: \(solution.calculatePartTwo())")
+        }
+        print("\tPart Two execution time: \(p2time) ms")
+        print("\n")
+        
         print("\n")
     }
     
@@ -55,5 +68,16 @@ struct Runner {
         }
         
         return try String(contentsOf: fileURL)
+    }
+    
+    private static func measureElapsedTime(_ operation: () throws -> Void) throws -> UInt64 {
+        let startTime = DispatchTime.now()
+        try operation()
+        let endTime = DispatchTime.now()
+
+        let elapsedTime = endTime.uptimeNanoseconds - startTime.uptimeNanoseconds
+        let elapsedTimeInMilliSeconds = Double(elapsedTime) / 1_000_000.0
+
+        return UInt64(elapsedTimeInMilliSeconds)
     }
 }
