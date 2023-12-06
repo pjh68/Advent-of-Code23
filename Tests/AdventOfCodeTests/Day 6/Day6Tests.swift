@@ -5,10 +5,10 @@ final class Day6Tests: XCTestCase, SolutionTest {
     typealias SUT = Day6
     
     func testPartOne() throws {
-        try XCTAssertEqual(sut.calculatePartOne(), 0)
+        try XCTAssertEqual(sut.calculatePartOne(), 288)
     }
     
     func testPartTwo() throws {
-        try XCTAssertEqual(sut.calculatePartTwo(), 0)
+        try XCTAssertEqual(sut.calculatePartTwo(), 71503)
     }
 }
