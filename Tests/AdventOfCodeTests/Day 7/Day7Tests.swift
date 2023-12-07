@@ -13,7 +13,7 @@ final class Day7Tests: XCTestCase, SolutionTest {
     }
     
     func testBestHand() {
-        let b1 = Hand.bestHand("22J89")
+        let b1 = Hand.bestHandFromJokers("22J89")
         XCTAssertEqual(b1, "22289")
     }
     
