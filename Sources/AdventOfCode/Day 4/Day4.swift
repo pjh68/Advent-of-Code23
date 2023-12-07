@@ -3,12 +3,12 @@ import Collections
 
 struct Day4: Solution {
     static let day = 4
-    var cards:[Card] = []
+    var cards:[LotteryCard] = []
     
     init(input: String) {
-        var tmpCard:[Card] = []
+        var tmpCard:[LotteryCard] = []
         input.enumerateLines { line, stop in
-            tmpCard.append(Card(line))
+            tmpCard.append(LotteryCard(line))
         }
         self.cards = tmpCard
     }
@@ -36,7 +36,7 @@ struct Day4: Solution {
     }
 }
 
-struct Card {
+struct LotteryCard {
     var cardNumber:Int, winningNumbers:Set<Int>, yourNumbers:Set<Int>
     
     var index: Int {

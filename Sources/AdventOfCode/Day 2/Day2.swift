@@ -3,7 +3,7 @@ import RegexBuilder
 struct Day2: Solution {
     static let day = 2
     var games : [Game] = []
-    let bag = Hand(b: 14, r: 12, g: 13)
+    let bag = HandOfMarbles(b: 14, r: 12, g: 13)
     
     init(input: String) {
         //Process input into structs
@@ -65,7 +65,7 @@ struct Day2: Solution {
 
 struct Game {
     var number : Int
-    var hands : [Hand]
+    var hands : [HandOfMarbles]
     
     init(num:Int){
         self.number = num
@@ -88,11 +88,11 @@ struct Game {
                 colormap[String(chunks[i]).trimmingCharacters(in: .punctuationCharacters)] = Int(chunks[i-1])
             }
             //print(colormap["red"])
-            self.hands.append(Hand(b: colormap["blue"], r: colormap["red"], g: colormap["green"]))
+            self.hands.append(HandOfMarbles(b: colormap["blue"], r: colormap["red"], g: colormap["green"]))
         }
     }
     
-    func possible(bag: Hand)->Bool {
+    func possible(bag: HandOfMarbles)->Bool {
         var possible = true
         for hand in hands {
             if hand.blue <= bag.blue && hand.red <= bag.red && hand.green <= bag.green {
@@ -111,8 +111,8 @@ struct Game {
         return minbag.blue * minbag.red * minbag.green
     }
     
-    func minimalBag()->Hand {
-        var minBag = Hand(b: 0, r: 0, g: 0)
+    func minimalBag()->HandOfMarbles {
+        var minBag = HandOfMarbles(b: 0, r: 0, g: 0)
         for hand in hands {
             minBag.blue = max(minBag.blue, hand.blue)
             minBag.red = max(minBag.red, hand.red)
@@ -125,7 +125,7 @@ struct Game {
 
 }
 
-struct Hand {
+struct HandOfMarbles {
     var blue, red, green : Int
     
     init(b:Int?,r:Int?,g:Int?) {
