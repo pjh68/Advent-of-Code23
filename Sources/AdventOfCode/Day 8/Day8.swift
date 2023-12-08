@@ -7,7 +7,7 @@ import Algorithms
 ///It feels slightly straightfoward... just follow the path, no decision making
 ///The input looks large... part 2 likely to uncover some performance issues?
 ///Unclear how can shortcut performance issues... in previous years there's been an obvious way of calculing a cycle length to save multiple traverses... but we don't have to complete a cycle here, so I can't see that possibility
-///
+///Part 2: hahah I see what you did there.
 
 
 struct Day8: Solution {
@@ -65,18 +65,15 @@ struct Day8: Solution {
                 currentNodes = currentNodes.map({network[$0]!.right})
             }
             
-            //if we've ended on a "??Z" node then remove it from the pool -- INCORRECT
-            //This might be where the cyclic complexity comes in?
-
-            //Only stop when everyone is on a Z ghost node
-//            if currentNodes.filter({$0.hasSuffix("Z")}).count == currentNodes.count {
+            //FUCK IT... let's try brute force
+//            if ghostZ.count == currentNodes.count {
 //                break
 //            }
-
-            //This will take far too long...
-            //Alt approach: work out shortest step count for each ghost
-            // and maybe when it repeats?
-            // Does the intial sequence repeat at all? Assume not
+            //Clearly no
+            
+            //Could just try LCM of the first Z of each... and the cycle length(?maybe?)
+            //I don't like this, because it makes a bunch of assumptions...like it's possible... maybe that's a fair assumption.
+            
             var ghostZ = currentNodes.filter({$0.hasSuffix("Z")})
             if ghostZ.count > 0 {
                 let cycle = stepCount / instructions.count
@@ -89,29 +86,14 @@ struct Day8: Solution {
                         firstZ[g] = stepCount
                     }
                 }
-                
-                
             }
             
             if firstZ.count == currentNodes.count {
                 break
             }
             
-            //FUCK IT... let's try brute force
-//            if ghostZ.count == currentNodes.count {
-//                break
-//            }
-            //Clearly no
-            
-            //Could just try LCM of the first Z of each... and the cycle length(?)
-            //I don't like this, because it makes a bunch of assumptions...liek it's possible... maybe that's a fair assumption.
-            
-            
-            
-            
+
         }
-        
-        //TODO: Lowest common multiple of first Z
         print("First z: \(firstZ)")
   
         return Array(firstZ.values).lcm()
