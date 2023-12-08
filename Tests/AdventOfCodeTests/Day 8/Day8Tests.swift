@@ -9,6 +9,14 @@ final class Day8Tests: XCTestCase, SolutionTest {
     }
     
     func testPartTwo() throws {
-        try XCTAssertEqual(sut.calculatePartTwo(), 0)
+        try XCTAssertEqual(sut.calculatePartTwo(), 6)
     }
+    
+    func testGhostNodes() {
+        let n = Node(key: "BCA",left: "CCC",right: "DDD")
+        XCTAssertTrue(n.ghostAnode)
+        let n2 = Node(key: "BCV",left: "CCC",right: "DDD")
+        XCTAssertTrue(!n2.ghostAnode)
+    }
+
 }
