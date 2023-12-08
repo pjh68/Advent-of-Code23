@@ -71,8 +71,8 @@ struct Day8: Solution {
 //            }
             //Clearly no
             
-            //Could just try LCM of the first Z of each... and the cycle length(?maybe?)
-            //I don't like this, because it makes a bunch of assumptions...like it's possible... maybe that's a fair assumption.
+            //Could just try LCM of the first Z of each... and the cycle length
+            //I don't like this, because it makes a bunch of assumptions...like it's possible... maybe that's a fair assumption for this puzzle!
             
             var ghostZ = currentNodes.filter({$0.hasSuffix("Z")})
             if ghostZ.count > 0 {
@@ -92,11 +92,12 @@ struct Day8: Solution {
                 break
             }
             
-
         }
         print("First z: \(firstZ)")
-  
-        return Array(firstZ.values).lcm()
+        let answer = lcm(instructions.count,Array(firstZ.values).lcm())
+        return answer
+        //    Part Two: 18024643846273
+        //    Part Two execution time: 41 ms
     }
 }
 
