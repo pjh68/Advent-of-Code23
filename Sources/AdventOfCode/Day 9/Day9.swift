@@ -29,8 +29,8 @@ struct Day9: Solution {
     func calculatePartTwo() -> Int {
         var wip = 0
         for h in self.histories {
-            print("History: \(h)")
-            print("Extrapolate: \(h.extrapolateBackwards)\n\n")
+            //print("History: \(h)")
+            //print("Extrapolate: \(h.extrapolateBackwards)\n\n")
             
             wip += h.extrapolateBackwards
         }
@@ -67,29 +67,35 @@ struct History : CustomStringConvertible {
     }
     
     var prediction : Int {
-        //Need to work backwards through the arrays of differentials
-        //add together last element of all ds
-        var wip = 0
-        for i in self.d {
-            wip += i.last!
-        }
-        return wip
+        //Don't need to work through arrays... can just add the last numbers together
+        return self.d.reduce(0, {$0 + $1.last!} )
+        
     }
     
     var extrapolateBackwards : Int {
         //feels like this should be as easy.. but inverting nature of maths gets quite hard
-        var wip = 0
-        var odd = true
-        for i in self.d {
-            if odd {
-                wip += i.first!
-                odd = false
-            } else {
-                wip -= i.first!
-                odd = true
-            }
-            
-        }
-        return wip
+//        var wip = 0
+//        var odd = true
+//        for i in self.d {
+//            if odd {
+//                wip += i.first!
+//                odd = false
+//            } else {
+//                wip -= i.first!
+//                odd = true
+//            }
+//            
+//        }
+//        return wip
+        
+        //can I rewrite this as a reduce function? Trickier!
+        //enumerated and offset are our friends
+        //0,2,4... should be add: n%2==0
+        //1,3,5... should be subtract: n%2==1
+        // n * -2 + 1 gives us the -1 / +1 pattern needed
+        return self.d.enumerated().reduce(0, {$0 + ($1.offset % 2 * -2 + 1) * $1.element.first!})
+        
+        
+        
     }
 }
