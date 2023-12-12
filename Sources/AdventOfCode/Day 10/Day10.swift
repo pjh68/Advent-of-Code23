@@ -19,7 +19,7 @@ struct Day10: Solution {
     
     static let day = 10
     
-    var pipemap : PipeMap
+    var pipemap : TwoDMap
     var start : Position
     var rows : Int = 0
     var columns : Int = 0
@@ -42,7 +42,7 @@ struct Day10: Solution {
         } else {
             fatalError("Couldn't find start")
         }
-        pipemap = PipeMap(map: map)
+        pipemap = TwoDMap(map: map)
         print("Pipe map loaded. Rows=\(rows) Columns=\(columns)")
     }
     
@@ -117,6 +117,20 @@ struct Day10: Solution {
         //Bug: corner case... literally! When ray crosses a corner. Could a further away point help?
         //Observations... setting farfaraway to a large number results in no hits at all
         //maybe flood fill would have been a better idea... lost the mojo on this now.
+        
+        //RETHINK: I don't need to trace to the same point... I can just trace horizontal lines to the edge of the map :facepalm:
+        //Can also trace to either side of the map, so can trace to right to keep the iteration simple.
+        //Means we don't need to do any maths
+        //But do need to track when entering and exiting path... as a continuius run of paths is only crossing it twice.
+        ///examples:
+        /// X->...F-----7   //X is outside the shape. Enters path, stays in path, exists path
+        /// X--> F7 //X is outside the shape
+        /// X ->  Not possible to have a single tile wiggle... ubend takes two tiles.
+        /// X -> .....|......|......|  //Inside... crosses path 3 times
+        /// How to code this logic???
+        /// Can strip out "-" with no impact on resutls
+        /// Now just need to detect double pipe (e.g. "F7")
+        
         
         print("Raytracing internal area")
         var internalPosCount = 0
@@ -262,7 +276,7 @@ enum Direction : CaseIterable {
     }
 }
 
-struct PipeMap : CustomStringConvertible {
+struct TwoDMap : CustomStringConvertible {
     var description: String {
         var output = ""
         map.forEach { e in
