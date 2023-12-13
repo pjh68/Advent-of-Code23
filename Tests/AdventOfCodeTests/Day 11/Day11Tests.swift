@@ -9,6 +9,6 @@ final class Day11Tests: XCTestCase, SolutionTest {
     }
     
     func testPartTwo() throws {
-        try XCTAssertEqual(sut.calculatePartTwo(), 8410)
+        try XCTAssertEqual(sut.testForPartTwo(), 8410)
     }
 }
