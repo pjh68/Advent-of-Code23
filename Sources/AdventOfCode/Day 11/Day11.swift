@@ -32,9 +32,12 @@ struct Day11: Solution {
     }
     
     func calculatePartOne() -> Int {
+        print("Expanding galaxy")
         let expandedMap = expandMap(skymap)
-        let galaxies = galaxyPositions(in: expandedMap)
+        print(expandedMap)
+        let galaxies = galaxyPositions(map: expandedMap)
         let galaxyPairs = galaxies.combinations(ofCount: 2)
+        print("\(galaxyPairs.count) galaxy pairs")
         let sumpath = galaxyPairs.reduce(0, {$0 + manhatanDistance(from: $1[0], to: $1[1])})
         
         return sumpath
@@ -46,18 +49,49 @@ struct Day11: Solution {
     
     func expandMap(_ input: TwoDMap) -> TwoDMap {
         //TODO: Expand the map
-        //Expand out rows without galaxies
+        var output = input
+        var rowOffset = 0
+        for r in 0..<input.rows {
+            if !input.map[r].contains("#") {
+                output.map.insert(input.map[r], at: r+rowOffset)
+                rowOffset += 1
+            }
+        }
+        
         //Expand out columns without galaxies
-        return input
+        var colOffset = 0
+        for c in 0..<input.columns {
+            let column = input.map.compactMap({$0[c]})
+            if !column.contains("#") {
+                //expand
+                print("Empty column found at \(c)")
+                for r in 0..<output.rows {
+                    output.map[r].insert(".", at: c+colOffset)
+                }
+                colOffset += 1
+            }
+        }
+        
+        return output
     }
     
-    func galaxyPositions(in: TwoDMap) -> [Position] {
+    func galaxyPositions(map: TwoDMap) -> [Position] {
         //TODO: find the positions of all the galaxies
-        return []
+        var output : [Position] = []
+        for r in 0..<map.rows {
+            for c in 0..<map.columns {
+                let pos = Position(r, c)
+                if map.value(pos) == "#" {
+                    output.append(pos)
+                }
+            }
+        }
+        
+        return output
     }
     
     func manhatanDistance(from: Position, to: Position) -> Int {
-        return (abs(from.0 - to.0) + abs(from.1 - to.1))
+        return (abs(from.x - to.x) + abs(from.y - to.y))
     }
     
     

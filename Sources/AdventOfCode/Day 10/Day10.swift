@@ -1,6 +1,3 @@
-typealias Position = (Int, Int)
-typealias Line = (Position, Position)
-
 struct Day10: Solution {
     
 
@@ -25,13 +22,13 @@ struct Day10: Solution {
     var columns : Int = 0
     
     init(input: String) {
-        var tmpStart : (Int, Int)?
+        var tmpStart : Position?
         var map : [[Character]] = []
         for l in input.split(separator: "\n").enumerated() {
             var la = Array(l.element)
             map.append(la)
             if let c = la.firstIndex(of: "S") {
-                tmpStart = (l.offset, c)
+                tmpStart = Position(l.offset, Int(c))
                 //only want to do this operation once, so sticking it in here
                 columns = la.count
             }
@@ -53,7 +50,7 @@ struct Day10: Solution {
         
         
         var steps = 1
-        var currentPos : [Position] = nextPos(from: start, excluding: (-1,-1)) //using an invalid pos for excluding as easier than making it optional
+        var currentPos : [Position] = nextPos(from: start, excluding: Position(-1,-1)) //using an invalid pos for excluding as easier than making it optional
         assert(currentPos.count == 2) //sensible check on assumption
         var lastPos : [Position] = [start, start]
         
@@ -82,7 +79,7 @@ struct Day10: Solution {
         
         //Calculate path - reuse of Part 1 (but copied here because mutating functions are breaking this solution)
         var steps = 1
-        var currentPos : [Position] = nextPos(from: start, excluding: (-1,-1)) //using an invalid pos for excluding as easier than making it optional
+        var currentPos : [Position] = nextPos(from: start, excluding: Position(-1,-1)) //using an invalid pos for excluding as easier than making it optional
         assert(currentPos.count == 2) //sensible check on assumption
         var lastPos : [Position] = [start, start]
         var wipPath : [[Position]] = []
@@ -94,7 +91,7 @@ struct Day10: Solution {
         while currentPos[0] != currentPos[1] {
             for i in 0...1 { //iterate over both paths
                 //print("Path \(i) is at \(currentPos[i])")
-                var next = nextPos(from: currentPos[i],excluding: lastPos[i]).first!
+                let next = nextPos(from: currentPos[i],excluding: lastPos[i]).first!
                 lastPos[i] = currentPos[i]
                 currentPos[i] = next
             }
@@ -103,14 +100,18 @@ struct Day10: Solution {
             steps += 1
         }
         
-        //assemble path - going to need this for part2
-        var path : [Position] = []
-        path.append(start)
-        path.append(contentsOf: wipPath[0])
-        path.append(contentsOf: wipPath[1].reversed().dropFirst())
-        path.append(start)
-        let pathSegments = path.adjacentPairs()
-        print("Path assembled: \(pathSegments)")
+        //assemble path - going to need this IF WE DID FLOOD FILL
+//        var path : [Position] = []
+//        path.append(start)
+//        path.append(contentsOf: wipPath[0])
+//        path.append(contentsOf: wipPath[1].reversed().dropFirst())
+        //path.append(start)
+        
+        var path : Set = [start]
+        path.formUnion(wipPath[0])
+        path.formUnion(wipPath[1])
+        
+        
         
         //Raytrace
         
@@ -134,89 +135,57 @@ struct Day10: Solution {
         
         print("Raytracing internal area")
         var internalPosCount = 0
-        let farfaraway = (-100,-100)
         for r in 0...rows {
+            //REVISED: between this cell and the right hand edge of this row
+            //Hold up.... potential optimisation... can calculate this row by row, rather than cell by cell.
+            var inPath = false
+            var pathCross = 0
             for c in 0..<columns {
-                let pos : Position = (r, c)
-                //check how many pathSegements it intersects
-                //discard the path itself
-                if !path.contains(where: {$0 == pos}) {
-                    print("Raytracing pos: \(pos)")
-                    let line = (farfaraway, pos)
-                    var intersectCount = 0
-                    for seg in pathSegments {
-                        //Specific debug check
-                        if pos == (6,2)  {
-                            print("DEBUG trigger")
+                let pos : Position = Position(r, c)
+                //We're only looking at path... no any other crap in the map
+                //path is an array of Positions.... which isn't now the most helpful.. fixed by changing to struct and set of these
+                
+                //BUG...fixed working off the path doesn't work... side by side vertical pipes are different to -
+                
+                //BUG... approach seems fundamentally flawed... a long pipe behaves differently depending on its surrounding, and I can't work out a logical rule.
+                // Should have gone for flood fill!
+                
+                
+                let pipeType = pipemap.value(pos)
+                
+                if pipeType == "|" {
+                    pathCross += 1
+                } else {
+                    if path.contains(pos) {
+                        if inPath {
+                            //we're in a path and still in the path
+                            
+                        } else {
+                            inPath = true
                         }
-                        
-                        if intersects(line: line, segment: seg) {
-                            intersectCount += 1
+                    } else {
+                        if inPath {
+                            //we've exited the path
+                            pathCross += 1
+                            inPath = false
                         }
                     }
-                    if intersectCount % 2 == 1 { //odd
-                        internalPosCount += 1
-                        print("Pos: \(pos) has intersection count of \(intersectCount) so is \(intersectCount % 2 == 1 ? "internal" : "external")")
-                    }
-                        
-                    
                 }
+                if pathCross > 0 && pathCross % 2 == 1 && !path.contains(pos) {
+                    internalPosCount += 1
+                }
+                print("\(r),\(c): crosses \(pathCross) times : \(inPath ? "in path" : " ") with internal count \(internalPosCount)")
+                
+                
+                
+                
             }
         }
 
         return internalPosCount
     }
     
-    func intersects(line: Line, segment: Line)->Bool {
-        //Does the line intersect this segment?
-        //Vert or horizontal seg?
-        if segment.0.0 == segment.1.0 { //matching rows, horizontal segment
-            //Are we even in the same columns?
-            let segmentMin = min(segment.0.1, segment.1.1) //col
-            let segmentMax = max(segment.0.1, segment.1.1) //col
-            let lineMax = max(line.0.1, line.1.1) //col
-            if lineMax > segmentMin { //weirdly, this is the only check we need to make at this time, assuming line starts off grid at negative number
-        
-                //get the column values of the line and see if they intersect..
-                //Gradient... columns / rows
-                let gradient : Double = Double((line.1.0 - line.0.0)) / Double((line.1.1 - line.0.1))
-                let r1 = Double(line.0.1) + gradient * Double(segmentMin)
-                let r2 = Double(line.0.1) + gradient * Double(segmentMax)
-                //detect if these cross the current row
-                let r1sign = (r1 - Double(segment.0.0)).sign
-                let r2sign = (r2 - Double(segment.0.0)).sign
-                if r1sign != r2sign {
-                    print("Ray crosses segment: \(segment)")
-                }
-                return r1sign != r2sign //true if crosses
-            } else {
-                return false
-            }
-        } else { //vertical segment
-            //TODO: redo the logic above, but flipped 90deg... matching columns, vertical segment
-            //Are we even in the same row?
-            let segmentMin = min(segment.0.0, segment.1.0) //row
-            let segmentMax = max(segment.0.0, segment.1.0) //row
-            let lineMax = max(line.0.0, line.1.0) //row
-            if lineMax >= segmentMin { //weirdly, this is the only check we need to make at this time, assuming line starts off grid at negative number
-        
-                //get the column values of the line and see if they intersect..
-                //Gradient... rows / columns
-                let gradient : Double = Double((line.1.1 - line.0.1)) / Double((line.1.0 - line.0.0))
-                let r1 = Double(line.0.0) + gradient * Double(segmentMin)
-                let r2 = Double(line.0.0) + gradient * Double(segmentMax)
-                //detect if these cross the current row
-                let r1sign = (r1 - Double(segment.0.1)).sign
-                let r2sign = (r2 - Double(segment.0.1)).sign
-                if r1sign != r2sign {
-                    print("Ray crosses segment: \(segment)")
-                }
-                return r1sign != r2sign //true if crosses
-            } else {
-                return false
-            }
-        }
-    }
+
     //Part 2 attempt1... 8509 = too high!
     
     
@@ -236,7 +205,7 @@ struct Day10: Solution {
     func possibleNextMove(from:Position, excluding:Position)->[(position: Position, direction: Direction)] {
         var output : [(Position,Direction)] = []
         for d in Direction.allCases {
-            let pos = (from.0 + d.value.0, from.1 + d.value.1)
+            let pos = Position(from.x + d.value.0, from.y + d.value.1)
             if inRange(pos) && (pos != excluding) {
                 output.append((pos,d))
             }
@@ -246,7 +215,7 @@ struct Day10: Solution {
     
     func inRange(_ pos:Position)->Bool {
         //is this position within the field of play?
-        return pos.0 >= 0 && pos.0 <= rows && pos.1 >= 0 && pos.1 < columns
+        return pos.x >= 0 && pos.x <= rows && pos.y >= 0 && pos.y < columns
     }
     
     func nextPos(from:Position, excluding:Position)->[Position] {
@@ -255,49 +224,9 @@ struct Day10: Solution {
     }
 }
 
-//Remember: ROW, COLUMN addressing
-enum Direction : CaseIterable {
-    case Up
-    case Down
-    case Left
-    case Right
-    
-    var value : (Int, Int) {
-        switch self {
-        case .Up:
-            return (-1, 0)
-        case .Down:
-            return (1, 0)
-        case .Left:
-            return (0, -1)
-        case .Right:
-            return (0, 1)
-        }
-    }
-}
 
-struct TwoDMap : CustomStringConvertible {
-    var description: String {
-        var output = ""
-        map.forEach { e in
-            output.append("\(e)\n")
-        }
-        return output
-    }
-    
-    var map : [[Character]]
-    
-    init(map: [[Character]]) {
-        self.map = map
-    }
-    
-    func value(_ pos:Position)->Character {
-        return map[pos.0][pos.1]
-    }
-    
-}
 
 //helper to allow comparison of Position tuples
-func ==<T: Equatable, U: Equatable>(lhs: (T,U), rhs: (T,U)) -> Bool {
-    return lhs.0 == rhs.0 && lhs.1 == rhs.1
-}
+//func ==<T: Equatable, U: Equatable>(lhs: (T,U), rhs: (T,U)) -> Bool {
+//    return lhs.0 == rhs.0 && lhs.1 == rhs.1
+//}
