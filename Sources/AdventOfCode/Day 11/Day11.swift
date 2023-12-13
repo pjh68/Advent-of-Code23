@@ -44,7 +44,45 @@ struct Day11: Solution {
     }
     
     func calculatePartTwo() -> Int {
-        0
+        //need to extract galaxy positions first, then run expansion routine numerically
+        
+        var galaxies = galaxyPositions(map: skymap)
+        var rexp = expandRows(skymap)
+        var cexp = expandCols(skymap)
+        
+        //move the galaxies about
+        for r in 0..<rexp.count {
+            for i in 0..<galaxies.count {
+                let pos = galaxies[i]
+                if pos.x > rexp[r] {
+                    galaxies[i] = Position(pos.x + 1000000 - 1, pos.y)
+                }
+            }
+            //expand out the position of the empty rows
+            for rx in r..<rexp.count {
+                rexp[rx] = rexp[rx] + 1000000 - 1
+            }
+        }
+        
+        for c in 0..<cexp.count {
+            for i in 0..<galaxies.count {
+                let pos = galaxies[i]
+                if pos.y > cexp[c] {
+                    galaxies[i] = Position(pos.x, pos.y + 1000000 - 1)
+                }
+            }
+            //expand out the position of the empty rows
+            for cx in c..<cexp.count {
+                cexp[cx] = cexp[cx] + 1000000 - 1
+            }
+        }
+        
+        let galaxyPairs = galaxies.combinations(ofCount: 2)
+        print("\(galaxyPairs.count) galaxy pairs")
+        let sumpath = galaxyPairs.reduce(0, {$0 + manhatanDistance(from: $1[0], to: $1[1])})
+        
+        return sumpath
+        
     }
     
     func expandMap(_ input: TwoDMap) -> TwoDMap {
@@ -74,6 +112,29 @@ struct Day11: Solution {
         
         return output
     }
+    
+    func expandRows(_ input: TwoDMap) -> [Int] {
+        //return the rows that need expanding
+        var output : [Int] = []
+        for r in 0..<input.rows {
+            if !input.map[r].contains("#") {
+                output.append(r)
+            }
+        }
+        return output
+    }
+    
+    func expandCols(_ input: TwoDMap) -> [Int] {
+        var output : [Int] = []
+        for c in 0..<input.columns {
+            let column = input.map.compactMap({$0[c]})
+            if !column.contains("#") {
+                output.append(c)
+            }
+        }
+        return output
+    }
+    
     
     func galaxyPositions(map: TwoDMap) -> [Position] {
         //TODO: find the positions of all the galaxies
