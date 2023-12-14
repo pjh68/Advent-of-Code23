@@ -80,6 +80,10 @@ struct Day10: Solution {
         //Calculate path - reuse of Part 1 (but copied here because mutating functions are breaking this solution)
         var steps = 1
         var currentPos : [Position] = nextPos(from: start, excluding: Position(-1,-1)) //using an invalid pos for excluding as easier than making it optional
+        //TODO: At this stage we should be able to determine what type of pipe S is
+        let sPipeType = calcSPipeType(directions: currentPos.map({calcDirection(from: start, to: $0)}))
+        
+        
         assert(currentPos.count == 2) //sensible check on assumption
         var lastPos : [Position] = [start, start]
         var wipPath : [[Position]] = []
@@ -111,111 +115,74 @@ struct Day10: Solution {
         path.formUnion(wipPath[0])
         path.formUnion(wipPath[1])
         
+        //Raytrace / scanlines approach
+
+        //But 653 is still too high for real problem.
+        //Grrr... think I'm going to give up!
+        // 672
+        // 645... still not there, so some edge cases, but unsure which direction.
+
+        //OK.. read some tips... and it seems like need to handle the bends: L7 different to LJ!!!
+        //Storing "opener value" will enable doign this logic.
+        //Fing U-BENDS!!!!!
+        //Shame the test data didn't uncover this.
         
-        
-        //Raytrace
-        
-        //Bug: corner case... literally! When ray crosses a corner. Could a further away point help?
-        //Observations... setting farfaraway to a large number results in no hits at all
-        //maybe flood fill would have been a better idea... lost the mojo on this now.
-        
-        //RETHINK: I don't need to trace to the same point... I can just trace horizontal lines to the edge of the map :facepalm:
-        //Can also trace to either side of the map, so can trace to right to keep the iteration simple.
-        //Means we don't need to do any maths
-        //But do need to track when entering and exiting path... as a continuius run of paths is only crossing it twice.
-        ///examples:
-        /// X->...F-----7   //X is outside the shape. Enters path, stays in path, exists path
-        /// X--> F7 //X is outside the shape
-        /// X ->  Not possible to have a single tile wiggle... ubend takes two tiles.
-        /// X -> .....|......|......|  //Inside... crosses path 3 times
-        /// How to code this logic???
-        /// Can strip out "-" with no impact on resutls
-        /// Now just need to detect double pipe (e.g. "F7")
+        //Possibly woulnd't need to work from both sides... in fact, shouldn't as will break logic.
         
         
         
-        
-        print("Raytracing internal area")
+        print("Scan lining internal area")
         var internalPosCount = 0
         for r in 0...rows {
-            //REVISED: between this cell and the right hand edge of this row
-            //Hold up.... potential optimisation... can calculate this row by row, rather than cell by cell.
-            var inPath = [false, false]
-            var pathCross = [0, 0]
-            //assumption that we have an even number of columns, so let's enforce that
-            assert(columns%2==0)
+            var inPath = false
+            var pathCross = 0
+            var inside = false
+            var pathStartChar : Character?
             
-            for c in 0..<columns/2 {
-                let leftpos : Position = Position(r, c)
-                let rightpos : Position = Position(r, columns-c-1)
-                //We're only looking at path... no any other crap in the map
-                //path is an array of Positions.... which isn't now the most helpful.. fixed by changing to struct and set of these
+            for c in 0..<columns {
+                let pos = Position(r, c)
+                var pipeType = pipemap.value(pos)
                 
-                //BUG...fixed working off the path doesn't work... side by side vertical pipes are different to -
-                
-                //BUG... approach seems fundamentally flawed... a long pipe behaves differently depending on its surrounding, and I can't work out a logical rule.
-                // Should have gone for flood fill!
-                
-                //OR... final hurrah? Trace from both edges and meet in the middle... I think the math might work out???
-                
-                //Made it work for the simple example... fails for more complex example and puzzle itself.
-                
-                //OK fixed for test case
-                //But 653 is still too high for real problem.
-                //Grrr... think I'm going to give up! 
-                // 672
-                // 645... still not there, so some edge cases, but unsure which direction.
-                //Is the S value giving me the issue? If that should be a "|" then maybe?
-                //Nah.. it's an L and I'm not doing anything special for an L
-               
-                //OK.. read some tips... and it seems like need to handle the bends: L7 different to LJ!!!
-                //Storing "opener value" will enable doign this logic.
-                //Fing U-BENDS!!!!!
-                //Shame the test data didn't uncover this.
-                
-                //Possibly woulnd't need to work from both sides... in fact, shouldn't as will break logic.
-                
-                
-                
-                for lr in 0...1 { //crude left / right switcheroo
-                    let pos = lr == 0 ? leftpos : rightpos
-                    
-                    let pipeType = pipemap.value(pos)
-                    
-                    if path.contains(pos) {
+                if pipeType == "S" {
+                    //Need to work out what type of pipe S really is
+                    pipeType = sPipeType
+                }
+            
+                if path.contains(pos) {
+                    if pipeType != "-" {
                         if pipeType == "|" {
-                            pathCross[lr] += 1
-                            if inPath[lr] {
-                                //out of sideways pipe into a |
-                                pathCross[lr] += 1
-                                inPath[lr] = false
-                            }
-                            
-                            //inPath[lr] = false //this has made it higher! 672
-                        }else{
-                            
-                            if inPath[lr] {
-                                //we're in a path and still in the path
+                            inside = !inside //flip inside indicator
+                        } else if inPath {
+                            //detect end of pipe, and inside/outside logic
+                            let bendType = "\(pathStartChar!)\(pipeType)"
+                            if bendType == "LJ" || bendType == "F7" {
+                                //UBend!
+                                //do nothing
+                            } else if bendType == "L7" || bendType == "FJ" {
+                                //Wiggle!
+                                inside = !inside
                                 
                             } else {
-                                inPath[lr] = true
+                                fatalError("Unexpected branch")
                             }
-                        }
-                    } else {
-                        if inPath[lr] {
-                            //we've exited the path
-                            pathCross[lr] += 1
-                            inPath[lr] = false
+                            inPath = false
+                            pathStartChar = nil
+                            
+                        } else {
+                            //entering the path
+                            pathStartChar = pipeType
+                            inPath = true
                         }
                     }
-                    
-                    if pathCross[lr] > 0 && pathCross[lr] % 2 == 1 && !path.contains(pos) {
-                            internalPosCount += 1
-                            print("Interior found at \(pos)")
-                        }
+                } else {
+                    // not in path... so count if we're inside
+                    if inside && c != columns - 1 {
+                        internalPosCount += 1
                     }
                 }
+            }
         }
+                    
 
         return internalPosCount
     }
@@ -246,6 +213,34 @@ struct Day10: Solution {
             }
         }
         return output
+    }
+    
+    func calcDirection(from:Position, to:Position) -> Direction {
+        let directionVector = (to.x - from.x, to.y - from.y)
+        for d in Direction.allCases {
+            if d.value.0 == directionVector.0 && d.value.1 == directionVector.1 {
+                return d
+            }
+        }
+        fatalError("Couldn't find direction")
+    }
+    
+    func calcSPipeType(directions:[Direction]) -> Character {
+        let setd = Set(directions)
+        if setd.contains(.Up) && setd.contains(.Down) {
+            return "|"
+        } else if setd.contains(.Up) && setd.contains(.Left) {
+            return "J"
+        } else if setd.contains(.Up) && setd.contains(.Right) {
+            return "L"
+        } else if setd.contains(.Down) && setd.contains(.Left) {
+            return "7"
+        } else if setd.contains(.Down) && setd.contains(.Right) {
+            return "F"
+        } else if setd.contains(.Left) && setd.contains(.Right) {
+            return "-"
+        }
+        fatalError("failed to find s pipetype")
     }
     
     func inRange(_ pos:Position)->Bool {
