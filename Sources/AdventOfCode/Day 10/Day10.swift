@@ -133,15 +133,21 @@ struct Day10: Solution {
         /// Now just need to detect double pipe (e.g. "F7")
         
         
+        
+        
         print("Raytracing internal area")
         var internalPosCount = 0
         for r in 0...rows {
             //REVISED: between this cell and the right hand edge of this row
             //Hold up.... potential optimisation... can calculate this row by row, rather than cell by cell.
-            var inPath = false
-            var pathCross = 0
-            for c in 0..<columns {
-                let pos : Position = Position(r, c)
+            var inPath = [false, false]
+            var pathCross = [0, 0]
+            //assumption that we have an even number of columns, so let's enforce that
+            assert(columns%2==0)
+            
+            for c in 0..<columns/2 {
+                let leftpos : Position = Position(r, c)
+                let rightpos : Position = Position(r, columns-c-1)
                 //We're only looking at path... no any other crap in the map
                 //path is an array of Positions.... which isn't now the most helpful.. fixed by changing to struct and set of these
                 
@@ -150,36 +156,65 @@ struct Day10: Solution {
                 //BUG... approach seems fundamentally flawed... a long pipe behaves differently depending on its surrounding, and I can't work out a logical rule.
                 // Should have gone for flood fill!
                 
+                //OR... final hurrah? Trace from both edges and meet in the middle... I think the math might work out???
                 
-                let pipeType = pipemap.value(pos)
+                //Made it work for the simple example... fails for more complex example and puzzle itself.
                 
-                if pipeType == "|" {
-                    pathCross += 1
-                } else {
+                //OK fixed for test case
+                //But 653 is still too high for real problem.
+                //Grrr... think I'm going to give up! 
+                // 672
+                // 645... still not there, so some edge cases, but unsure which direction.
+                //Is the S value giving me the issue? If that should be a "|" then maybe?
+                //Nah.. it's an L and I'm not doing anything special for an L
+               
+                //OK.. read some tips... and it seems like need to handle the bends: L7 different to LJ!!!
+                //Storing "opener value" will enable doign this logic.
+                //Fing U-BENDS!!!!!
+                //Shame the test data didn't uncover this.
+                
+                //Possibly woulnd't need to work from both sides... in fact, shouldn't as will break logic.
+                
+                
+                
+                for lr in 0...1 { //crude left / right switcheroo
+                    let pos = lr == 0 ? leftpos : rightpos
+                    
+                    let pipeType = pipemap.value(pos)
+                    
                     if path.contains(pos) {
-                        if inPath {
-                            //we're in a path and still in the path
+                        if pipeType == "|" {
+                            pathCross[lr] += 1
+                            if inPath[lr] {
+                                //out of sideways pipe into a |
+                                pathCross[lr] += 1
+                                inPath[lr] = false
+                            }
                             
-                        } else {
-                            inPath = true
+                            //inPath[lr] = false //this has made it higher! 672
+                        }else{
+                            
+                            if inPath[lr] {
+                                //we're in a path and still in the path
+                                
+                            } else {
+                                inPath[lr] = true
+                            }
                         }
                     } else {
-                        if inPath {
+                        if inPath[lr] {
                             //we've exited the path
-                            pathCross += 1
-                            inPath = false
+                            pathCross[lr] += 1
+                            inPath[lr] = false
+                        }
+                    }
+                    
+                    if pathCross[lr] > 0 && pathCross[lr] % 2 == 1 && !path.contains(pos) {
+                            internalPosCount += 1
+                            print("Interior found at \(pos)")
                         }
                     }
                 }
-                if pathCross > 0 && pathCross % 2 == 1 && !path.contains(pos) {
-                    internalPosCount += 1
-                }
-                print("\(r),\(c): crosses \(pathCross) times : \(inPath ? "in path" : " ") with internal count \(internalPosCount)")
-                
-                
-                
-                
-            }
         }
 
         return internalPosCount
