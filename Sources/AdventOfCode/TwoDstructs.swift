@@ -44,7 +44,7 @@ struct Position : Equatable, Hashable {
 
 
 
-struct TwoDMap : CustomStringConvertible {
+struct TwoDMap : CustomStringConvertible, Hashable {
     var description: String {
         var output = ""
         map.forEach { e in
@@ -61,6 +61,10 @@ struct TwoDMap : CustomStringConvertible {
     
     func value(_ pos:Position)->Character {
         return map[pos.x][pos.y]
+    }
+    
+    mutating func setvalue(pos: Position, val: Character) {
+        map[pos.x][pos.y] = val
     }
     
     var rows : Int {
